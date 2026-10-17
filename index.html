@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyMate AI</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 18px 25px;
+        }
+
+        .header-content {
+            max-width: 1000px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .logo { font-size: 22px; font-weight: bold; }
+        .tagline { color: #6b7280; font-size: 14px; }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .hero { text-align: center; margin-bottom: 30px; }
+        .hero h1 { font-size: 36px; margin-bottom: 10px; }
+        .hero p { color: #6b7280; }
+
+        .card, .answer-card, .history-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.06);
+            margin-bottom: 25px;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        textarea, select, input[type="file"] {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            background: white;
+            color: #1f2937;
+        }
+
+        textarea { min-height: 150px; resize: vertical; }
+
+        .section-title {
+            margin-top: 22px;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .mark-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .mark-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 13px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .mark-btn.selected {
+            background: #111827;
+            color: white;
+            border-color: #111827;
+        }
+
+        .generate-btn, .photo-btn {
+            width: 100%;
+            margin-top: 18px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #111827;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .photo-btn { background: #075985; }
+
+        button:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+        }
+
+        #status {
+            text-align: center;
+            color: #6b7280;
+            min-height: 22px;
+            margin: 18px 0 0;
+            overflow-wrap: anywhere;
+        }
+
+        .answer-header, .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .answer-header { margin-bottom: 15px; }
+        .answer-header h2, .history-header h2 { margin: 0; }
+
+        #answerText {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            min-height: 100px;
+        }
+
+        .answer-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .answer-buttons button, .clear-history {
+            padding: 11px 18px;
+            border: none;
+            border-radius: 9px;
+            cursor: pointer;
+            background: #e5e7eb;
+            font-weight: 600;
+        }
+
+        .history-item {
+            margin-top: 15px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #111827;
+        }
+
+        .history-question {
+            font-weight: bold;
+            margin-bottom: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .history-type {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .history-answer {
+            white-space: pre-wrap;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .empty-history { color: #6b7280; }
+        footer { text-align: center; color: #9ca3af; font-size: 13px; padding: 25px; }
+
+        @media (max-width: 600px) {
+            .header-content { flex-direction: column; align-items: flex-start; }
+            .hero h1 { font-size: 28px; }
+            .container { margin-top: 25px; }
+            .card, .answer-card, .history-card { padding: 18px; }
+            .mark-buttons, .answer-buttons { flex-direction: column; }
+            .mark-btn, .answer-buttons button { width: 100%; }
+            .history-header { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="header-content">
+        <div class="logo">🎓 StudyMate AI</div>
+        <div class="tagline">Your Smart Study Assistant</div>
+    </div>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <h1>Study Smarter with AI 🤖</h1>
+        <p>Get simple, exam-ready answers from text or question photos.</p>
+    </section>
+
+    <div class="card">
+        <label class="label" for="question">Enter Your Question</label>
+        <textarea id="question" placeholder="Example: What is an Operating System?"></textarea>
+
+        <div class="section-title">
+            <label class="label" for="subject">📚 Select Subject</label>
+        </div>
+
+        <select id="subject">
+            <option value="General">General / Other</option>
+            <option value="C Programming">C Programming</option>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+            <option value="Engineering Mathematics">Engineering Mathematics</option>
+            <option value="Engineering Physics">Engineering Physics</option>
+            <option value="Engineering Chemistry">Engineering Chemistry</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Data Structures">Data Structures</option>
+            <option value="Computer Networks">Computer Networks</option>
+            <option value="Database Management Systems">Database Management Systems</option>
+            <option value="Operating Systems">Operating Systems</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Electronics Engineering">Electronics Engineering</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+        </select>
+
+        <div class="section-title">Select Answer Type</div>
+
+        <div class="mark-buttons">
+            <button type="button" class="mark-btn" onclick="setType('2 Mark', this)">2 Mark</button>
+            <button type="button" class="mark-btn" onclick="setType('5 Mark', this)">5 Mark</button>
+            <button type="button" class="mark-btn" onclick="setType('10 Mark', this)">10 Mark</button>
+        </div>
+
+        <button type="button" class="generate-btn" id="generateBtn" onclick="generateAnswer()">
+            ✨ Generate Answer
+        </button>
+
+        <div class="section-title">📷 Or Upload a Question Photo</div>
+        <label class="label" for="photo">Choose JPG, PNG or WebP (max 5 MB)</label>
+        <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
+
+        <button type="button" class="photo-btn" id="photoBtn" onclick="generateFromPhoto()">
+            📷 Upload Photo & Generate
+        </button>
+
+        <p id="status" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="answer-card">
+        <div class="answer-header"><h2>📝 Answer</h2></div>
+        <div id="answerText">Your answer will appear here.</div>
+
+        <div class="answer-buttons">
+            <button type="button" onclick="copyAnswer()">📋 Copy Answer</button>
+            <button type="button" onclick="clearAnswer()">🗑️ Clear</button>
+        </div>
+    </div>
+
+    <div class="history-card">
+        <div class="history-header">
+            <h2>📚 Question History</h2>
+            <button type="button" class="clear-history" onclick="clearHistory()">Clear History</button>
+        </div>
+        <div id="historyList"><p class="empty-history">No previous questions yet.</p></div>
+    </div>
+</main>
+
+<footer>StudyMate AI • Local AI Study Assistant</footer>
+
+<script>
+    let selectedType = "General";
+    let currentAnswer = "";
+
+    // One browser ID is used for the server-side daily photo limit.
+    function getBrowserId() {
+        let id = localStorage.getItem("studyMateBrowserId");
+
+        if (!id) {
+            if (crypto.randomUUID) {
+                id = crypto.randomUUID();
+            } else {
+                id = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+                    const r = Math.random() * 16 | 0;
+                    return (c === "x" ? r : (r & 3 | 8)).toString(16);
+                });
+            }
+
+            localStorage.setItem("studyMateBrowserId", id);
+        }
+
+        return id;
+    }
+
+    function setType(type, button) {
+        selectedType = type;
+
+        document.querySelectorAll(".mark-btn").forEach(btn => {
+            btn.classList.remove("selected");
+        });
+
+        button.classList.add("selected");
+        document.getElementById("status").innerText = "Selected: " + type;
+    }
+
+    function showAnswer(question, answer, subject) {
+        currentAnswer = answer;
+        document.getElementById("answerText").innerText = answer;
+        saveToHistory(question, selectedType, answer, subject);
+        displayHistory();
+    }
+
+    // EXISTING TEXT QUESTION FEATURE
+    async function generateAnswer() {
+        const question = document.getElementById("question").value.trim();
+        const subject = document.getElementById("subject").value;
+        const button = document.getElementById("generateBtn");
+
+        if (!question) {
+            alert("Please enter a question!");
+            return;
+        }
+
+        if (!["2 Mark", "5 Mark", "10 Mark"].includes(selectedType)) {
+            alert("Please select 2 Mark, 5 Mark or 10 Mark.");
+            return;
+        }
+
+        button.disabled = true;
+        button.innerText = "Generating...";
+        document.getElementById("status").innerText = "StudyMate AI is thinking...";
+        document.getElementById("answerText").innerText = "Generating your exam-ready answer...";
+        currentAnswer = "";
+
+        try {
+            const response = await fetch("/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    question,
+                    type: selectedType,
+                    subject
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Something went wrong");
+            }
+
+            showAnswer(question, data.answer, subject);
+            document.getElementById("status").innerText = "Answer generated successfully.";
+        } catch (error) {
+            document.getElementById("status").innerText = "Generation failed.";
+            document.getElementById("answerText").innerText = "Error: " + error.message;
+        } finally {
+            button.disabled = false;
+            button.innerText = "✨ Generate Answer";
+        }
+    }
+
+    // NEW PHOTO QUESTION FEATURE
+    async function generateFromPhoto() {
+        const fileInput = document.getElementById("photo");
+        const file = fileInput.files[0];
+        const subject = document.getElementById("subject").value;
+        const button = document.getElementById("photoBtn");
+
+        if (!file) {
+            alert("Please select a question photo first.");
+            return;
+        }
+
+        if (!["2 Mark", "5 Mark", "10 Mark"].includes(selectedType)) {
+            alert("Please select 2 Mark, 5 Mark or 10 Mark.");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Photo must be 5 MB or smaller.");
+            return;
+        }
+
+        button.disabled = true;
+        button.innerText = "Reading photo and generating answer...";
+        document.getElementById("status").innerText =
+            "Moondream is reading the question. This may take a little time.";
+        document.getElementById("answerText").innerText =
+            "Processing photo...";
+
+        try {
+            const formData = new FormData();
+            formData.append("photo", file);
+            formData.append("type", selectedType);
+            formData.append("subject", subject);
+
+            const response = await fetch("/generate-from-photo", {
+                method: "POST",
+                headers: {
+                    "x-user-id": getBrowserId()
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Photo processing failed.");
+            }
+
+            document.getElementById("question").value = data.question;
+
+            showAnswer(data.question, data.answer, subject);
+
+            document.getElementById("status").innerText =
+                "Photo question answered! Daily photo questions remaining: " +
+                data.remaining;
+
+            fileInput.value = "";
+        } catch (error) {
+            document.getElementById("status").innerText = "Photo processing failed.";
+            document.getElementById("answerText").innerText =
+                "Error: " + error.message;
+        } finally {
+            button.disabled = false;
+            button.innerText = "📷 Upload Photo & Generate";
+        }
+    }
+
+    async function copyAnswer() {
+        if (!currentAnswer) {
+            alert("Generate an answer first!");
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(currentAnswer);
+            document.getElementById("status").innerText = "Answer copied successfully!";
+        } catch (error) {
+            document.getElementById("status").innerText =
+                "Copy failed. Please select and copy manually.";
+        }
+    }
+
+    function clearAnswer() {
+        document.getElementById("question").value = "";
+        document.getElementById("subject").value = "General";
+        document.getElementById("photo").value = "";
+        document.getElementById("answerText").innerText = "Your answer will appear here.";
+        document.getElementById("status").innerText = "";
+
+        currentAnswer = "";
+        selectedType = "General";
+
+        document.querySelectorAll(".mark-btn").forEach(btn => {
+            btn.classList.remove("selected");
+        });
+    }
+
+    function saveToHistory(question, type, answer, subject) {
+        let history = [];
+
+        try {
+            history = JSON.parse(localStorage.getItem("studyMateHistory")) || [];
+        } catch (error) {
+            history = [];
+        }
+
+        history.unshift({
+            question,
+            type,
+            subject,
+            answer,
+            date: new Date().toLocaleString()
+        });
+
+        history = history.slice(0, 100);
+        localStorage.setItem("studyMateHistory", JSON.stringify(history));
+    }
+
+    function displayHistory() {
+        const historyList = document.getElementById("historyList");
+        let history = [];
+
+        try {
+            history = JSON.parse(localStorage.getItem("studyMateHistory")) || [];
+        } catch (error) {
+            history = [];
+        }
+
+        historyList.innerHTML = "";
+
+        if (history.length === 0) {
+            const p = document.createElement("p");
+            p.className = "empty-history";
+            p.textContent = "No previous questions yet.";
+            historyList.appendChild(p);
+            return;
+        }
+
+        history.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "history-item";
+
+            const questionDiv = document.createElement("div");
+            questionDiv.className = "history-question";
+            questionDiv.textContent = item.question || "";
+
+            const typeDiv = document.createElement("div");
+            typeDiv.className = "history-type";
+            typeDiv.textContent =
+                (item.subject || "General") + " • " +
+                (item.type || "") + " • " + (item.date || "");
+
+            const answerDiv = document.createElement("div");
+            answerDiv.className = "history-answer";
+            answerDiv.textContent = item.answer || "";
+
+            div.append(questionDiv, typeDiv, answerDiv);
+            historyList.appendChild(div);
+        });
+    }
+
+    function clearHistory() {
+        if (!confirm("Are you sure you want to clear all history?")) {
+            return;
+        }
+
+        localStorage.removeItem("studyMateHistory");
+        displayHistory();
+        document.getElementById("status").innerText = "History cleared.";
+    }
+
+    displayHistory();
+</script>
+</body>
+</html>
